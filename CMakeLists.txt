@@ -3,5 +3,5 @@ project(FastSnail)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES test.c)
-add_executable(FastSnail ${SOURCE_FILES} Base/FSObject.c)
+set(SOURCE_FILES Test.cpp)
+add_executable(FastSnail ${SOURCE_FILES} Base/FSAllocator.cpp Base/FSList.cpp Base/FSObject.cpp)
