@@ -20,20 +20,22 @@
 #ifndef FASTSNAIL_FSALLOCATOR_H
 #define FASTSNAIL_FSALLOCATOR_H
 
+#include "../FSConfig.h"
 
 class FSAllocator {
 
     class _FSBlock {
         void *_block;
-        unsigned long _size;
+        size_t _size;
         _FSBlock *_previous;
         _FSBlock *_next;
 
     public:
-        _FSBlock(unsigned long size);
+        _FSBlock(size_t size);
         virtual ~_FSBlock(void);
 
-        inline unsigned long size(void) { return _size; }
+        inline void * block(void) { return _block; }
+        inline size_t size(void) { return _size; }
 
         inline _FSBlock * previous(void) { return _previous; }
         inline void setPrevious(_FSBlock *previous) { _previous = previous; }
@@ -42,27 +44,26 @@ class FSAllocator {
         inline void setNext(_FSBlock *next) { _next = next; }
     };
 
-    class _FSBlockChain {
-        unsigned long _blockSize;
-        _FSBlock *_chainRoot;
+    /* pack size default value:
+     * clang: 8 byte
+     * gcc: 4 byte
+     * cl(vc): 8 byte
+     * */
+    _FSBlock **_blockArray;
+#ifdef FSALLOCATOR_DEBUG
+    _FSBlock **_deliveredBlockArray;
+#endif
+    unsigned int _arraySize;
 
-    public:
-        _FSBlockChain(unsigned long blockSize);
-        virtual ~_FSBlockChain(void);
-
-        inline unsigned long blockSize(void) { return _blockSize; }
-
-        _FSBlock * borrowBlock(void);
-        bool returnBlock(_FSBlock *block);
-    };
-
-    _FSBlockChain *_blockChain;
-    unsigned int _chainCount;
+protected:
+    void enlargeBlockArray(unsigned int multiple);
 
 public:
     FSAllocator(void);
     virtual ~FSAllocator(void);
 
+    void *alloc(size_t size);
+    void dealloc(void *block);
 };
 
 

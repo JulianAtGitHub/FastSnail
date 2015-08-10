@@ -18,93 +18,152 @@
 *****************************************************/
 
 #include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
 #include "FSAllocator.h"
 
 #pragma mark - implement FSAllocator::_FSBlock
 
-FSAllocator::_FSBlock::_FSBlock(unsigned long size)
+FSAllocator::_FSBlock::_FSBlock(size_t size)
 :_block(NULL)
 ,_size(size)
 ,_previous(NULL)
 ,_next(NULL)
 {
-    FSAllocator::_FSBlock **block = (FSAllocator::_FSBlock **)malloc(sizeof(FSAllocator::_FSBlock *) + size);
-    if (block) {
-        blocks[0] = this;
-        _block = blocks[1];
+    if (_size > 0) {
+        void *block = malloc(_size + FSALLOCATOR_PACK_SIZE);
+        _block = (void *)((uintptr_t)block + FSALLOCATOR_PACK_SIZE);
+        _FSBlock **address = (_FSBlock **)block;
+        *address = this;
     }
 }
 
 FSAllocator::_FSBlock::~_FSBlock(void) {
     if (_block) {
-        FSAllocator::_FSBlock **block = (FSAllocator::_FSBlock **)_block;
-        block--;
+        void *block = (void *)((uintptr_t)_block - FSALLOCATOR_PACK_SIZE);
         free(block);
     }
 }
 
-#pragma mark - implement FSAllocator::_FSBlockChain
-
-FSAllocator::_FSBlockChain::_FSBlockChain(unsigned long blockSize)
-:_blockSize(blockSize)
-,_chainRoot(NULL)
-{
-
-}
-
-FSAllocator::_FSBlockChain::~_FSBlockChain(void) {
-    FSAllocator::_FSBlock *lastBlock = _chainRoot;
-    while (lastBlock != NULL) {
-        lastBlock = lastBlock->next();
-        delete lastBlock;
-    }
-}
-
-FSAllocator::_FSBlock * FSAllocator::_FSBlockChain::borrowBlock(void) {
-    FSAllocator::_FSBlock *block = NULL;
-    if (_chainRoot == NULL) {
-        block = new FSAllocator::_FSBlock(_blockSize);
-    } else {
-        block = _chainRoot;
-        _chainRoot = block->next();
-        block->setPrevious(NULL);
-        block->setNext(NULL);
-    }
-    return block;
-}
-
-bool FSAllocator::_FSBlockChain::returnBlock(FSAllocator::_FSBlock *block) {
-    if (block == NULL || _blockSize != block->size()) {
-        return false;
-    }
-
-    if (_chainRoot == NULL) {
-        _chainRoot = block;
-        _chainRoot->setPrevious(NULL);
-        _chainRoot->setNext(NULL);
-    } else {
-        FSAllocator::_FSBlock *lastBlock = _chainRoot;
-        while (lastBlock->next() != NULL) {
-            lastBlock = lastBlock->next();
-        }
-        lastBlock->setNext(block);
-        block->setPrevious(lastBlock);
-        block->setNext(NULL);
-    }
-
-    return true;
-}
-
 #pragma mark - implement FSAllocator
 
-FSAllocator::FSAllocator(void)
-:_blockChain(NULL)
-,_chainCount(0)
-{
-
+FSAllocator::FSAllocator(void) {
+    _arraySize = (FSALLOCATOR_MAX_BLOCK_SIZE >> 2) + 1;
+    _blockArray = (_FSBlock **)calloc(_arraySize, sizeof(FSAllocator::_FSBlock *));
+#ifdef FSALLOCATOR_DEBUG
+    _deliveredBlockArray = (_FSBlock **)calloc(_arraySize, sizeof(FSAllocator::_FSBlock *));
+#endif
 }
 
 FSAllocator::~FSAllocator(void) {
+    for (unsigned int index = 0; index < _arraySize; ++index) {
+        if (_blockArray[index]) {
+            _FSBlock *head = _blockArray[index];
+            _FSBlock *element = NULL;
+            while (head) {
+                element = head;
+                head = element->next();
+                delete element;
+            }
+        }
+    }
 
+#ifdef FSALLOCATOR_DEBUG
+
+#endif
+}
+
+void FSAllocator::enlargeBlockArray(unsigned int multiple) {
+    if (multiple > 0 ) {
+        unsigned int newArraySize = _arraySize * multiple;
+
+        _FSBlock **blockArray = (_FSBlock **)calloc(newArraySize, sizeof(FSAllocator::_FSBlock *));
+        memcpy(blockArray, _blockArray, _arraySize * sizeof(FSAllocator::_FSBlock *));
+        free((void *)_blockArray);
+        _blockArray = blockArray;
+
+#ifdef FSALLOCATOR_DEBUG
+        _FSBlock **deliveredBlockArray = (_FSBlock **)calloc(newArraySize, sizeof(FSAllocator::_FSBlock *));
+        memcpy(deliveredBlockArray, _deliveredBlockArray, _arraySize * sizeof(FSAllocator::_FSBlock *));
+        free((void *)_deliveredBlockArray);
+        _deliveredBlockArray = deliveredBlockArray;
+#endif
+
+        _arraySize = newArraySize;
+    }
+}
+
+void * FSAllocator::alloc(size_t size) {
+    if (size == 0) {
+        return NULL;
+    }
+
+    unsigned int index = (unsigned int)(size >> 2);
+    if (index >= _arraySize) {
+        enlargeBlockArray( (unsigned int)ceilf((index + 1)/(float)_arraySize) );
+    }
+    _FSBlock *fsBlock = NULL;
+    if (_blockArray[index]) {
+        fsBlock = _blockArray[index];
+        _blockArray[index] = fsBlock->next();
+        fsBlock->setPrevious(NULL);
+        fsBlock->setNext(NULL);
+        if (_blockArray[index]) {
+            _blockArray[index]->setPrevious(NULL);
+        }
+    } else {
+        fsBlock = new _FSBlock((index + 1) >> 2);
+    }
+
+#ifdef FSALLOCATOR_DEBUG
+    _FSBlock *head = _deliveredBlockArray[index];
+    if (head) {
+        head->setPrevious(fsBlock);
+        fsBlock->setNext(head);
+    }
+    _deliveredBlockArray[index] = fsBlock;
+#endif
+
+    return fsBlock->block();
+}
+
+void FSAllocator::dealloc(void *block) {
+    if (block == NULL) {
+        return;
+    }
+
+    block = (void *)((uintptr_t)block - FSALLOCATOR_PACK_SIZE);
+    _FSBlock **address = (_FSBlock **)block;
+    _FSBlock *fsBlock = address[0];
+    unsigned int index = (unsigned int)(fsBlock->size() >> 2);
+
+#ifdef FSALLOCATOR_DEBUG
+    _FSBlock *element = _deliveredBlockArray[index];
+    while (element) {
+        if (element == fsBlock) {
+            if (element == _deliveredBlockArray[index]) {
+                _deliveredBlockArray[index] = element->next();
+            }
+            if (element->previous()) {
+                element->previous()->setNext(element->next());
+            }
+            if (element->next()) {
+                element->next()->setPrevious(element->previous());
+            }
+
+            break;
+        }
+        element = element->next();
+    }
+#endif
+
+    fsBlock->setNext(NULL);
+    fsBlock->setPrevious(NULL);
+    _FSBlock *head = _blockArray[index];
+    if (head) {
+        head->setPrevious(fsBlock);
+        fsBlock->setNext(head);
+    }
+    _blockArray[index] = fsBlock;
 }
