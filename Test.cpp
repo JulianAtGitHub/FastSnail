@@ -8,7 +8,7 @@
 
 int main (int argc, char **argv) {
 
-    printf("Hello FastSnail! \n Let's do some test!");
+    printf("Hello FastSnail!\nLet's do some test!\n");
 
     testFSAllocator();
 

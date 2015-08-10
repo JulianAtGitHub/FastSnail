@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "FSAllocator.h"
 
@@ -113,7 +114,7 @@ void * FSAllocator::alloc(size_t size) {
             _blockArray[index]->setPrevious(NULL);
         }
     } else {
-        fsBlock = new _FSBlock((index + 1) >> 2);
+        fsBlock = new _FSBlock((index + 1) << 2);
     }
 
 #ifdef FSALLOCATOR_DEBUG
@@ -136,7 +137,7 @@ void FSAllocator::dealloc(void *block) {
     block = (void *)((uintptr_t)block - FSALLOCATOR_PACK_SIZE);
     _FSBlock **address = (_FSBlock **)block;
     _FSBlock *fsBlock = address[0];
-    unsigned int index = (unsigned int)(fsBlock->size() >> 2);
+    unsigned int index = (unsigned int)(fsBlock->size() >> 2) - 1;
 
 #ifdef FSALLOCATOR_DEBUG
     _FSBlock *element = _deliveredBlockArray[index];
@@ -151,7 +152,6 @@ void FSAllocator::dealloc(void *block) {
             if (element->next()) {
                 element->next()->setPrevious(element->previous());
             }
-
             break;
         }
         element = element->next();
