@@ -36,29 +36,48 @@ public:
 
 void testFSAllocator (void) {
 
-    clock_t t_begin, t_end;
-    const unsigned int instanceCount = 90000000;
     const float time_per_clock = 1.0/CLOCKS_PER_SEC;
+    clock_t t_begin, t_end;
+    unsigned int instanceCount = 10000000;
+
+    CTestFSAllocator **instances = (CTestFSAllocator **)calloc(instanceCount, sizeof(CTestFSAllocator *));
 
     t_begin = clock();
     for (unsigned int i = 0; i < instanceCount; ++i) {
-        CTestFSAllocator * instance = new CTestFSAllocator();
+        CTestFSAllocator *instance = new CTestFSAllocator();
+        instance->set_l(100);
+        instances[i] = instance;
+    }
+    for (unsigned int i = 0; i < instanceCount; ++i) {
+        CTestFSAllocator *instance = instances[i];
         delete instance;
+        instances[i] = 0;
     }
     t_end = clock();
     printf("operator new and delete cost time:%f\n", (t_end - t_begin)*time_per_clock);
 
     FSAllocator *allocator = new FSAllocator();
+    instanceCount = instanceCount / 1000;
 
     t_begin = clock();
-    for (unsigned int i = 0; i < instanceCount; ++i) {
-        void *block = allocator->alloc(sizeof(CTestFSAllocator));
-        CTestFSAllocator *instance = new (block) CTestFSAllocator;
-        allocator->dealloc(instance);
+
+    for (int j = 0; j < 1000; ++j) {
+        for (unsigned int i = 0; i < instanceCount; ++i) {
+            void *block = allocator->alloc(sizeof(CTestFSAllocator));
+            CTestFSAllocator *instance = new (block) CTestFSAllocator;
+            instance->set_l(100);
+            instances[i] = instance;
+        }
+        for (unsigned int i = 0; i < instanceCount; ++i) {
+            CTestFSAllocator *instance = instances[i];
+            allocator->dealloc(instance);
+        }
     }
     t_end = clock();
     printf("use FSAllocator cost time:%f\n", (t_end - t_begin)*time_per_clock);
 
+    /* clean up */
+    free(instances);
     delete allocator;
     printf("FSAllocator tested!\n");
 }

@@ -22,7 +22,14 @@
 
 #define FSALLOCATOR_DEBUG
 
+/* pack size default value:
+ * clang: 8 byte
+ * gcc: 4 byte
+ * cl(vc): 8 byte
+ * */
 #define FSALLOCATOR_PACK_SIZE 8
+
+#define FSALLOCATOR_DEFAULT_ARRAY_LENGTH 64
 
 #define FSALLOCATOR_MAX_BLOCK_SIZE  1024
 

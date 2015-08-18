@@ -24,11 +24,11 @@
 
 class FSAllocator {
 
+public:
     class _FSBlock {
         void *_block;
         size_t _size;
-        _FSBlock *_previous;
-        _FSBlock *_next;
+        unsigned long _index;
 
     public:
         _FSBlock(size_t size);
@@ -37,26 +37,36 @@ class FSAllocator {
         inline void * block(void) { return _block; }
         inline size_t size(void) { return _size; }
 
-        inline _FSBlock * previous(void) { return _previous; }
-        inline void setPrevious(_FSBlock *previous) { _previous = previous; }
-
-        inline _FSBlock * next(void) { return _next; }
-        inline void setNext(_FSBlock *next) { _next = next; }
+        inline unsigned long index(void) { return _index; }
+        inline void setIndex(unsigned long index) { _index = index; }
     };
 
-    /* pack size default value:
-     * clang: 8 byte
-     * gcc: 4 byte
-     * cl(vc): 8 byte
-     * */
-    _FSBlock **_blockArray;
+    class _FSBlockArray {
+        _FSBlock **_blocks;
+        unsigned long _length;
+        unsigned long _count;
+
+        void enlargeBlockArray(void);
+    public:
+        _FSBlockArray(void);
+        virtual ~_FSBlockArray(void);
+
+        inline unsigned long count (void) { return _count; }
+
+        void addBlock(_FSBlock *block);
+        _FSBlock *removeBlock(void);
+        _FSBlock *removeBlock(unsigned long index);
+    };
+
+private:
+    unsigned int _arrayCount;
+    _FSBlockArray **_blockArraies;
 #ifdef FSALLOCATOR_DEBUG
-    _FSBlock **_deliveredBlockArray;
+    _FSBlockArray **_deliveredArraies;
 #endif
-    unsigned int _arraySize;
 
 protected:
-    void enlargeBlockArray(unsigned int multiple);
+    void enlarge(unsigned int multiple = 2);
 
 public:
     FSAllocator(void);
