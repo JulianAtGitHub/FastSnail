@@ -36,9 +36,11 @@ public:
 
 void testFSAllocator (void) {
 
+    printf("\ntest FSAllocator\n");
+
     const float time_per_clock = 1.0/CLOCKS_PER_SEC;
     clock_t t_begin, t_end;
-    unsigned int instanceCount = 10000000;
+    unsigned int instanceCount = 1000000;
 
     CTestFSAllocator **instances = (CTestFSAllocator **)calloc(instanceCount, sizeof(CTestFSAllocator *));
 
@@ -79,7 +81,6 @@ void testFSAllocator (void) {
     /* clean up */
     free(instances);
     delete allocator;
-    printf("FSAllocator tested!\n");
 }
 
 #endif //FASTSNAIL_TESTFSALLOCATOR_H

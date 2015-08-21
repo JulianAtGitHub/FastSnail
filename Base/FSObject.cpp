@@ -3,6 +3,15 @@
 //
 
 #include "FSObject.h"
+#include "FSBase.h"
+
+void * FSObject::operator new (size_t size) {
+    return g_fsAllocator->alloc(size);
+}
+
+void FSObject::operator delete (void* ptr) {
+    g_fsAllocator->dealloc(ptr);
+}
 
 FSObject::FSObject(void)
 :_retainCount(1) {
@@ -13,16 +22,14 @@ FSObject::~FSObject(void) {
 
 }
 
-unsigned int FSObject::retainCount(void) {
-    return _retainCount;
-}
-
 FSObject * FSObject::retain(void) {
-    ++_retainCount;
+    ++ _retainCount;
     return this;
 }
 
 void FSObject::release(void) {
-
+    if ((-- _retainCount) == 0) {
+        delete this;
+    }
 }
 
