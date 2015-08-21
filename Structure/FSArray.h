@@ -17,11 +17,30 @@
  *
 *****************************************************/
 
-#ifndef FASTSNAIL_FSBASE_H
-#define FASTSNAIL_FSBASE_H
+#ifndef FASTSNAIL_FSARRAY_H
+#define FASTSNAIL_FSARRAY_H
 
-class FSAllocator;
+#include "Base/FSObject.h"
 
-extern FSAllocator *g_fsAllocator;
+class FSArray : public FSObject {
+    FSObject **_array;
+    unsigned long _size;
+    unsigned long _count;
 
-#endif //FASTSNAIL_FSBASE_H
+protected:
+    void enlarge(void);
+
+public:
+    FSArray(unsigned long size = 0);
+    virtual ~FSArray(void);
+
+    inline unsigned long count(void) { return _count; }
+
+    FSObject * objectAt(unsigned long index);
+
+    FSObject * push(FSObject *object);
+    FSObject * pop(void);
+};
+
+
+#endif //FASTSNAIL_FSARRAY_H

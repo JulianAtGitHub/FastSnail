@@ -37,4 +37,6 @@ public:
     void release(void);
 };
 
+extern const size_t c_FSObjectPoint_size;
+
 #endif //FASTSNAIL_FSOBJECT_H

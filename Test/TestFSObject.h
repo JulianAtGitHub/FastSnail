@@ -5,7 +5,7 @@
 #ifndef FASTSNAIL_TESTFSOBJECT_H
 #define FASTSNAIL_TESTFSOBJECT_H
 
-#include "../Base/FSObject.h"
+#include "Base/FSObject.h"
 
 class CTestFSObject : public FSObject {
     unsigned long m_l;

@@ -139,13 +139,13 @@ void FSAllocator::enlarge(unsigned int multiple) {
 
         _FSBlockArray **blockArraies = (_FSBlockArray **)calloc(arrayCount, s_blockArrayPointSize);
         memcpy(blockArraies, _blockArraies, _arrayCount * s_blockArrayPointSize);
-        free((void *) _blockArraies);
+        free(_blockArraies);
         _blockArraies = blockArraies;
 
 #ifdef FSALLOCATOR_DEBUG
         _FSBlockArray **deliveredArraies = (_FSBlockArray **)calloc(arrayCount, s_blockArrayPointSize);
         memcpy(deliveredArraies, _deliveredArraies, _arrayCount * s_blockArrayPointSize);
-        free((void *) _deliveredArraies);
+        free(_deliveredArraies);
         _deliveredArraies = deliveredArraies;
 #endif
 

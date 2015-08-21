@@ -21,6 +21,7 @@
 
 #include "FastSnail.h"
 #include "Base/FSBase.h"
+#include "Base/FSAllocator.h"
 
 FSAllocator *g_fsAllocator = NULL;
 

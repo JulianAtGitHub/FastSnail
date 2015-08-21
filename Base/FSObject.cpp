@@ -18,6 +18,9 @@
 *****************************************************/
 #include "FSObject.h"
 #include "FSBase.h"
+#include "FSAllocator.h"
+
+const size_t c_FSObjectPoint_size = sizeof(FSObject);
 
 void * FSObject::operator new (size_t size) {
     return g_fsAllocator->alloc(size);

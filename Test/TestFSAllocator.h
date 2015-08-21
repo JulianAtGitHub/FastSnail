@@ -9,7 +9,7 @@
 #include <time.h>
 #include <new>
 
-#include "../Base/FSAllocator.h"
+#include "Base/FSAllocator.h"
 
 class CTestFSAllocator {
     unsigned int m_ui;

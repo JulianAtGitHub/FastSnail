@@ -20,7 +20,7 @@
 #ifndef FASTSNAIL_FSALLOCATOR_H
 #define FASTSNAIL_FSALLOCATOR_H
 
-#include "../FSConfig.h"
+#include "FSConfig.h"
 
 class FSAllocator {
 

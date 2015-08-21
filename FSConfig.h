@@ -20,6 +20,8 @@
 #ifndef FASTSNAIL_FSCONFIG_H
 #define FASTSNAIL_FSCONFIG_H
 
+/* For FSAllocator */
+
 #define FSALLOCATOR_DEBUG
 
 /* pack size default value:
@@ -32,5 +34,9 @@
 #define FSALLOCATOR_DEFAULT_ARRAY_LENGTH 64
 
 #define FSALLOCATOR_MAX_BLOCK_SIZE  1024
+
+/* For FSArray */
+
+#define FSARRAY_DEFAULT_SIZE 16
 
 #endif //FASTSNAIL_FSCONFIG_H
