@@ -45,7 +45,7 @@ void testFSAllocator (void) {
     t_begin = clock();
     for (unsigned int i = 0; i < instanceCount; ++i) {
         CTestFSAllocator *instance = new CTestFSAllocator();
-        instance->set_l(100);
+//        instance->set_l(100);
         instances[i] = instance;
     }
     for (unsigned int i = 0; i < instanceCount; ++i) {
@@ -65,7 +65,7 @@ void testFSAllocator (void) {
         for (unsigned int i = 0; i < instanceCount; ++i) {
             void *block = allocator->alloc(sizeof(CTestFSAllocator));
             CTestFSAllocator *instance = new (block) CTestFSAllocator;
-            instance->set_l(100);
+//            instance->set_l(100);
             instances[i] = instance;
         }
         for (unsigned int i = 0; i < instanceCount; ++i) {

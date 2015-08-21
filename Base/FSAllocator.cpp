@@ -105,7 +105,7 @@ FSAllocator::_FSBlock * FSAllocator::_FSBlockArray::removeBlock(unsigned long in
 #pragma mark - implement FSAllocator
 
 FSAllocator::FSAllocator(void) {
-    _arrayCount = (FSALLOCATOR_MAX_BLOCK_SIZE >> 2) + 1;
+    _arrayCount = (FSALLOCATOR_MAX_BLOCK_SIZE >> 2);
     _blockArraies = (_FSBlockArray **)calloc(_arrayCount, s_blockArrayPointSize);
 #ifdef FSALLOCATOR_DEBUG
     _deliveredArraies = (_FSBlockArray **)calloc(_arrayCount, s_blockArrayPointSize);
@@ -158,7 +158,7 @@ void * FSAllocator::alloc(size_t size) {
         return NULL;
     }
 
-    unsigned int index = (unsigned int)(size >> 2);
+    unsigned int index = (unsigned int)((size - 1) >> 2);
     if (index >= _arrayCount) {
         enlarge( (unsigned int)ceilf( (index + 1)/(float)_arrayCount) );
     }
