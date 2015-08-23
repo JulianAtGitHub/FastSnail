@@ -5,6 +5,7 @@
 #ifndef FASTSNAIL_TESTFSOBJECT_H
 #define FASTSNAIL_TESTFSOBJECT_H
 
+#include <stdio.h>
 #include "Base/FSObject.h"
 
 class CTestFSObject : public FSObject {
@@ -20,10 +21,12 @@ void testFSObject(void) {
 
     FSObject *obj1 = new FSObject;
     obj1->retain();
+    printf("obj1 retain count:%d\n", obj1->retainCount());
     obj1->release();
     obj1->release();
 
     CTestFSObject *obj2 = new CTestFSObject;
+    printf("obj2 retain count:%d\n", obj1->retainCount());
     obj2->release();
 
 }
