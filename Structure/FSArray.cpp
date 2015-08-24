@@ -17,8 +17,6 @@
  *
 *****************************************************/
 
-#include <string.h>
-
 #include "FSArray.h"
 #include "FSConfig.h"
 
@@ -30,7 +28,7 @@ FSArray::FSArray(unsigned long size)
         _size = FSARRAY_DEFAULT_SIZE;
     }
 
-    _array = (FSObject **)calloc(_size, c_FSObjectPoint_size);
+    _array = (FSObject **)malloc(_size * c_FSObjectPoint_size);
 }
 
 FSArray::~FSArray(void) {
@@ -44,12 +42,8 @@ FSArray::~FSArray(void) {
 }
 
 void FSArray::enlarge(void) {
-    unsigned long size = _size << 1;
-    FSObject **array = (FSObject **)calloc(size, c_FSObjectPoint_size);
-    memcpy(array, _array, _size * c_FSObjectPoint_size);
-    free(_array);
-    _array = array;
-    _size = size;
+    _size <<= 1;
+    _array = (FSObject **)realloc(_array, _size * c_FSObjectPoint_size);
 }
 
 FSObject * FSArray::objectAt(unsigned long index) {

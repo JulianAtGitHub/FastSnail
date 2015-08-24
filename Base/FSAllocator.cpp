@@ -65,12 +65,8 @@ FSAllocator::_FSBlockArray::~_FSBlockArray(void) {
 }
 
 void FSAllocator::_FSBlockArray::enlargeBlockArray(void) {
-    unsigned long newLength = _length << 1;
-    void *blocks = calloc(newLength, s_blockPointSize);
-    memcpy(blocks, _blocks, _length * s_blockPointSize);
-    free(_blocks);
-    _blocks = (_FSBlock **)blocks;
-    _length = newLength;
+    _length <<= 1;
+    _blocks = (_FSBlock **)realloc(_blocks, _length * s_blockPointSize);
 }
 
 void FSAllocator::_FSBlockArray::addBlock(_FSBlock *block) {
