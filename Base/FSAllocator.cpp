@@ -78,6 +78,7 @@ void FSAllocator::_FSBlockArray::addBlock(_FSBlock *block) {
         _blocks[_count ++] = block;
     }
 }
+
 FSAllocator::_FSBlock * FSAllocator::_FSBlockArray::removeBlock(void) {
     _FSBlock *block = NULL;
     if (_count > 0) {
@@ -86,6 +87,7 @@ FSAllocator::_FSBlock * FSAllocator::_FSBlockArray::removeBlock(void) {
     }
     return block;
 }
+
 FSAllocator::_FSBlock * FSAllocator::_FSBlockArray::removeBlock(unsigned long index) {
     _FSBlock *block = NULL;
     if (index < _count) {
