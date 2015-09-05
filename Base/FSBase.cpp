@@ -1,5 +1,5 @@
 /*****************************************************
- * Created by Julian on 8/21/15.
+ * Created by Julian on 9/5/15.
  *      /^\    /^\
  *     {  O}  {  O}
  *      \ /    \ /
@@ -17,29 +17,32 @@
  *
 *****************************************************/
 
-#ifndef FASTSNAIL_FSBASE_H
-#define FASTSNAIL_FSBASE_H
+#include <stdarg.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-#include <assert.h>
-
-class FSAllocator;
-
-extern FSAllocator *g_fsAllocator;
-
-extern const size_t FSOBJECT_POINT_SIZE;
+#include "FSBase.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void FSLog(const char *format, ...);
+static const unsigned int s_log_buff_size = 10240;
+static char *s_log_buff = NULL;
+
+void FSLog(const char *format, ...) {
+    if(format) {
+        if (!s_log_buff) {
+            s_log_buff = (char *)malloc((s_log_buff_size + 1) * sizeof(char));
+        }
+        va_list ap;
+        va_start(ap, format);
+        vsnprintf(s_log_buff, s_log_buff_size, format, ap);
+        va_end(ap);
+        printf("FastSnail: %s\n", s_log_buff);
+    }
+}
 
 #ifdef __cplusplus
 }
 #endif
-
-#define FSAssert(condition, format, ...) \
-    FSLog(format, ##__VA_ARGS__); \
-    assert(condition)
-
-#endif //FASTSNAIL_FSBASE_H

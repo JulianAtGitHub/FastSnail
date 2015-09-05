@@ -32,7 +32,7 @@ public:
 
     public:
         _FSBlock(size_t size);
-        virtual ~_FSBlock(void);
+        ~_FSBlock(void);
 
         inline void * block(void) { return _block; }
         inline size_t size(void) { return _size; }
@@ -46,10 +46,10 @@ public:
         unsigned long _length;
         unsigned long _count;
 
-        void enlargeBlockArray(void);
+        bool enlargeBlockArray(void);
     public:
         _FSBlockArray(void);
-        virtual ~_FSBlockArray(void);
+        ~_FSBlockArray(void);
 
         inline unsigned long count (void) { return _count; }
 

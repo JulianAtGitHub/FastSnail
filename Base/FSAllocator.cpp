@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "FSBase.h"
+
 #include "FSAllocator.h"
 
 static size_t s_blockPointSize = sizeof(FSAllocator::_FSBlock *);
@@ -60,19 +62,33 @@ FSAllocator::_FSBlockArray::_FSBlockArray(void)
 
 FSAllocator::_FSBlockArray::~_FSBlockArray(void) {
     if (_blocks) {
+        _FSBlock *block = NULL;
+        for (unsigned long i = 0; i < _count; ++i) {
+            block = _blocks[i];
+            delete block;
+        }
         free(_blocks);
     }
 }
 
-void FSAllocator::_FSBlockArray::enlargeBlockArray(void) {
+bool FSAllocator::_FSBlockArray::enlargeBlockArray(void) {
     _length <<= 1;
-    _blocks = (_FSBlock **)realloc(_blocks, _length * s_blockPointSize);
+    void *blocks = realloc(_blocks, _length * s_blockPointSize);
+    if (!blocks) {
+        _length >>= 1;
+        return false;
+    }
+    _blocks = (_FSBlock **)blocks;
+    return true;
 }
 
 void FSAllocator::_FSBlockArray::addBlock(_FSBlock *block) {
     if (block) {
         if (_count == _length) {
-            enlargeBlockArray();
+            if (!enlargeBlockArray()) {
+                FSAssert(false, "FSAllocator::_FSBlockArray enlarge block array faild!");
+                return;
+            }
         }
         block->setIndex(_count);
         _blocks[_count ++] = block;
@@ -116,17 +132,17 @@ FSAllocator::~FSAllocator(void) {
     for (unsigned int index = 0; index < _arrayCount; ++index) {
         blockArray = _blockArraies[index];
         if (blockArray) {
-            while ((block = blockArray->removeBlock()) != NULL) {
-                delete block;
-            }
+            delete blockArray;
         }
-        delete blockArray;
+
     }
 
 #ifdef FSALLOCATOR_DEBUG
     for (unsigned int index = 0; index < _arrayCount; ++index) {
         blockArray = _deliveredArraies[index];
-        delete blockArray;
+        if (blockArray) {
+            delete blockArray;
+        }
     }
 #endif
 }
