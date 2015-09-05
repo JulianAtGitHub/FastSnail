@@ -28,7 +28,7 @@ FSArray::FSArray(unsigned long size)
         _size = FSARRAY_DEFAULT_SIZE;
     }
 
-    _array = (FSObject **)malloc(_size * c_FSObjectPoint_size);
+    _array = (FSObject **)malloc(_size * FSOBJECT_POINT_SIZE);
 }
 
 FSArray::~FSArray(void) {
@@ -43,7 +43,7 @@ FSArray::~FSArray(void) {
 
 void FSArray::enlarge(void) {
     _size <<= 1;
-    _array = (FSObject **)realloc(_array, _size * c_FSObjectPoint_size);
+    _array = (FSObject **)realloc(_array, _size * FSOBJECT_POINT_SIZE);
 }
 
 FSObject * FSArray::objectAt(unsigned long index) {

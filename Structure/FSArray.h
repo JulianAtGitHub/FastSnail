@@ -20,6 +20,7 @@
 #ifndef FASTSNAIL_FSARRAY_H
 #define FASTSNAIL_FSARRAY_H
 
+#include "Base/FSBase.h"
 #include "Base/FSObject.h"
 
 class FSArray : public FSObject {
