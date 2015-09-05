@@ -23,6 +23,20 @@
 #include <stdlib.h>
 
 class FSObject {
+
+public:
+    struct _FSReference {
+        static void * operator new (size_t size);
+        static void operator delete (void* ptr);
+
+        _FSReference *_next;
+        FSObject **_reference;
+
+        _FSReference(FSObject **ref):_next(NULL) ,_reference(ref) { }
+    };
+
+private:
+    _FSReference *_referenceList;
     unsigned int _retainCount;
 
 public:
@@ -32,9 +46,14 @@ public:
     FSObject(void);
     virtual ~FSObject(void);
 
+    /* string reference */
     inline unsigned int retainCount(void) { return _retainCount; }
     FSObject * retain(void);
     void release(void);
+
+    /* weak reference */
+    void link(FSObject **objRef);
+    void separate(FSObject **objRef);
 };
 
 #endif //FASTSNAIL_FSOBJECT_H

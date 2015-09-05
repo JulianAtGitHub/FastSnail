@@ -26,8 +26,6 @@ class FSAllocator;
 
 extern FSAllocator *g_fsAllocator;
 
-extern const size_t FSOBJECT_POINT_SIZE;
-
 #ifdef __cplusplus
 extern "C" {
 #endif

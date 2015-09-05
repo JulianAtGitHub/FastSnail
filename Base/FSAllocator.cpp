@@ -26,9 +26,6 @@
 
 #include "FSAllocator.h"
 
-static size_t s_blockPointSize = sizeof(FSAllocator::_FSBlock *);
-static size_t s_blockArrayPointSize = sizeof(FSAllocator::_FSBlockArray *);
-
 #pragma mark - implement FSAllocator::_FSBlock
 
 FSAllocator::_FSBlock::_FSBlock(size_t size)
@@ -57,7 +54,7 @@ FSAllocator::_FSBlockArray::_FSBlockArray(void)
 :_length(FSALLOCATOR_DEFAULT_ARRAY_LENGTH)
 ,_count(0)
 {
-    _blocks = (_FSBlock **)calloc(_length, s_blockPointSize);
+    _blocks = (_FSBlock **)calloc(_length, sizeof(FSAllocator::_FSBlock *));
 }
 
 FSAllocator::_FSBlockArray::~_FSBlockArray(void) {
@@ -73,7 +70,7 @@ FSAllocator::_FSBlockArray::~_FSBlockArray(void) {
 
 bool FSAllocator::_FSBlockArray::enlargeBlockArray(void) {
     _length <<= 1;
-    void *blocks = realloc(_blocks, _length * s_blockPointSize);
+    void *blocks = realloc(_blocks, _length * sizeof(FSAllocator::_FSBlock *));
     if (!blocks) {
         _length >>= 1;
         return false;
@@ -120,9 +117,9 @@ FSAllocator::_FSBlock * FSAllocator::_FSBlockArray::removeBlock(unsigned long in
 
 FSAllocator::FSAllocator(void) {
     _arrayCount = (FSALLOCATOR_MAX_BLOCK_SIZE >> 2);
-    _blockArraies = (_FSBlockArray **)calloc(_arrayCount, s_blockArrayPointSize);
+    _blockArraies = (_FSBlockArray **)calloc(_arrayCount, sizeof(FSAllocator::_FSBlockArray *));
 #ifdef FSALLOCATOR_DEBUG
-    _deliveredArraies = (_FSBlockArray **)calloc(_arrayCount, s_blockArrayPointSize);
+    _deliveredArraies = (_FSBlockArray **)calloc(_arrayCount, sizeof(FSAllocator::_FSBlockArray *));
 #endif
 }
 
@@ -151,14 +148,14 @@ void FSAllocator::enlarge(unsigned int multiple) {
     if (multiple > 1 ) {
         unsigned int arrayCount = _arrayCount * multiple;
 
-        _FSBlockArray **blockArraies = (_FSBlockArray **)calloc(arrayCount, s_blockArrayPointSize);
-        memcpy(blockArraies, _blockArraies, _arrayCount * s_blockArrayPointSize);
+        _FSBlockArray **blockArraies = (_FSBlockArray **)calloc(arrayCount, sizeof(FSAllocator::_FSBlockArray *));
+        memcpy(blockArraies, _blockArraies, _arrayCount * sizeof(FSAllocator::_FSBlockArray *));
         free(_blockArraies);
         _blockArraies = blockArraies;
 
 #ifdef FSALLOCATOR_DEBUG
-        _FSBlockArray **deliveredArraies = (_FSBlockArray **)calloc(arrayCount, s_blockArrayPointSize);
-        memcpy(deliveredArraies, _deliveredArraies, _arrayCount * s_blockArrayPointSize);
+        _FSBlockArray **deliveredArraies = (_FSBlockArray **)calloc(arrayCount, sizeof(FSAllocator::_FSBlockArray *));
+        memcpy(deliveredArraies, _deliveredArraies, _arrayCount * sizeof(FSAllocator::_FSBlockArray *));
         free(_deliveredArraies);
         _deliveredArraies = deliveredArraies;
 #endif

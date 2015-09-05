@@ -16,11 +16,18 @@
  * /_____________________________________~~____
  *
 *****************************************************/
+
 #include "FSObject.h"
 #include "FSBase.h"
 #include "FSAllocator.h"
 
-const size_t FSOBJECT_POINT_SIZE = sizeof(FSObject);
+void * FSObject::_FSReference::operator new (size_t size) {
+    return g_fsAllocator->alloc(size);
+}
+
+void FSObject::_FSReference::operator delete (void* ptr) {
+    g_fsAllocator->dealloc(ptr);
+}
 
 void * FSObject::operator new (size_t size) {
     return g_fsAllocator->alloc(size);
@@ -31,12 +38,23 @@ void FSObject::operator delete (void* ptr) {
 }
 
 FSObject::FSObject(void)
-:_retainCount(1) {
+:_referenceList(NULL)
+,_retainCount(1)
+{
 
 }
 
 FSObject::~FSObject(void) {
-
+    if (_referenceList) {
+        _FSReference *element = _referenceList;
+        _FSReference *reference = NULL;
+        while (element) {
+            reference = element;
+            *(reference->_reference) = NULL;
+            delete reference;
+            element = element->_next;
+        }
+    }
 }
 
 FSObject * FSObject::retain(void) {
@@ -47,6 +65,55 @@ FSObject * FSObject::retain(void) {
 void FSObject::release(void) {
     if ((-- _retainCount) == 0) {
         delete this;
+    }
+}
+
+void FSObject::link(FSObject **objRef) {
+    if (!objRef) {
+        return;
+    }
+
+    _FSReference *element = _referenceList;
+    _FSReference *tail = NULL;
+    while (element) {
+        if (element->_reference == objRef) {
+            return;
+        } else {
+            tail = element;
+            element = element->_next;
+        }
+    }
+
+    element = new _FSReference(objRef);
+    *(element->_reference) = this;
+    if (tail) {
+        tail->_next = element;
+    } else {
+        _referenceList = element;
+    }
+}
+
+void FSObject::separate(FSObject **objRef) {
+    if (!objRef) {
+        return;
+    }
+
+    _FSReference *previous = NULL;
+    _FSReference *element = _referenceList;
+    while (element) {
+        if (element->_reference == objRef) {
+            if (previous) {
+                previous->_next = element->_next;
+            } else {
+                _referenceList = element->_next;
+            }
+            *(element->_reference) = NULL;
+            delete element;
+            return;
+        } else {
+            previous = element;
+            element = element->_next;
+        }
     }
 }
 
