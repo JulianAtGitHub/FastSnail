@@ -27,6 +27,14 @@ void testFSObject(void) {
 
     CTestFSObject *obj2 = new CTestFSObject;
     printf("obj2 retain count:%d\n", obj1->retainCount());
+
+    CTestFSObject *obj3 = obj2;
+    obj2->link((FSObject **)&obj3);
+
+    CTestFSObject *obj4 = obj2;
+    obj2->link((FSObject **)&obj4);
+
+    obj2->separate((FSObject **)&obj3);
     obj2->release();
 
 }

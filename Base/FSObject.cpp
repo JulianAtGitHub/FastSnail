@@ -45,15 +45,11 @@ FSObject::FSObject(void)
 }
 
 FSObject::~FSObject(void) {
-    if (_referenceList) {
-        _FSReference *element = _referenceList;
-        _FSReference *reference = NULL;
-        while (element) {
-            reference = element;
-            *(reference->_reference) = NULL;
-            delete reference;
-            element = element->_next;
-        }
+    _FSReference *element = NULL;
+    while (_referenceList) {
+        element = _referenceList;
+        _referenceList = element->_next;
+        delete element;
     }
 }
 
